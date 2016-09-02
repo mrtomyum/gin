@@ -9,8 +9,6 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 )
 
-
-
 const (
 	DB_HOST = "tcp(nava.work:3306)"
 	DB_NAME = "stock"

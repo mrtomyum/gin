@@ -4,8 +4,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/guregu/null"
 	"github.com/jmoiron/sqlx"
+	//"github.com/mrtomyum/nava-stock/model"
+	//"strconv"
 	"testing"
 	"time"
+	"github.com/mrtomyum/nava-stock/model"
 )
 
 const (
@@ -73,26 +76,175 @@ type tb_sv_machine struct {
 //	log.Info(machines)
 //}
 
-func TestImportTable_Machine(t *testing.T) {
-	sql := `SELECT * FROM tb_sv_machine ORDER BY code`
-	var fromMachines []tb_sv_machine
-	err := msDB.Select(&fromMachines, sql)
-	if err != nil {
-		t.Error(err)
-	}
-	var count int
-	for _, from := range fromMachines {
-		sql = `INSERT INTO machine(code) VALUES(?)`
-		code := from.Code.String
-		_, err := myDB.Exec(sql, code)
-		if err != nil {
-			log.Error(err.Error())
-		}
-		count++
-		log.Info("Import machine row number = ", count)
-	}
+//func TestImportTable_Machine(t *testing.T) {
+//	sql := `SELECT * FROM tb_sv_machine WHERE typecode <> '' ORDER BY code`
+//	var fromMachines []tb_sv_machine
+//	err := msDB.Select(&fromMachines, sql)
+//	if err != nil {
+//		t.Error(err)
+//	}
+//	var count int
+//	for _, m := range fromMachines {
+//		code := m.Code.String
+//		placecode := m.PlaceCode.String
+//		var c model.Client
+//		_ = myDB.Get(&c, `SELECT id FROM client WHERE code =?`, placecode)
+//		clientID := c.ID
+//		sql = `INSERT INTO machine(code, client_id) VALUES(?,?)`
+//		_, err := myDB.Exec(sql, code, clientID)
+//		if err != nil {
+//			log.Error(err.Error())
+//		}
+//		count++
+//		log.Info("Import machine row number = ", count)
+//	}
+//}
+
+type BCItem struct {
+	Code  null.String `db:"code"`
+	Name1 null.String
+	Name2 null.String
+	//DefStkUnitCode string
+	//DefSaleUnitCode string
+	//DefBuyUnitCode string
+	//BrandCode string
+	//TypeCode string
 }
 
+//func TestImportTable_Item(t *testing.T) {
+//	log.Info(">>>1")
+//	sql := `SELECT
+//	 	code,
+//	 	name1,
+//	 	name2
+//	 FROM BCItem ORDER BY code`
+//	var items []BCItem
+//	log.Info("var items")
+//	err := msDB.Select(&items, sql)
+//	if err != nil {
+//		t.Error("Error on Select():", err)
+//	}
+//	log.Info("no err on msDB.Select()")
+//	var count int
+//	sql = `INSERT INTO item(
+//			sku,
+//			nameTH,
+//			nameEN
+//		) VALUES(?,?,?)`
+//	stmt, err := myDB.Preparex(sql)
+//	if err != nil {
+//		t.Error("Error on DBPreparex()=", err)
+//	}
+//
+//	for _, i := range items {
+//		_, err := stmt.Exec(
+//			i.Code,
+//			i.Name1,
+//			i.Name2,
+//		)
+//		if err != nil {
+//			log.Error(err.Error())
+//		}
+//		count++
+//		log.Info("Import Item row number = ", count)
+//	}
+//}
 
+type MachineColumn struct {
+	MachineCode string
+	Code        string
+	ItemCode    string
+}
 
+//func TestImportTable_MachineColumn(t *testing.T) {
+//	sql := `SELECT
+//	 	machinecode,
+//	 	code,
+//	 	itemcode
+//	 FROM tb_sv_machineshelf ORDER BY machinecode ASC, code ASC`
+//	var mcs []MachineColumn
+//	log.Info("var mc")
+//	err := msDB.Select(&mcs, sql)
+//	if err != nil {
+//		t.Error("Error on Select():", err)
+//	}
+//	log.Info("no err on msDB.Select()")
+//	var count int
+//	sql = `INSERT INTO machine_column(
+//			machine_id,
+//			column_no,
+//			item_id
+//		) VALUES(?,?,?)`
+//	stmt, err := myDB.Preparex(sql)
+//	if err != nil {
+//		t.Error("Error on DBPreparex()=", err)
+//	}
+//	var (
+//		m model.Machine
+//		i model.Item
+//	)
+//	for _, mc := range mcs {
+//
+//		myDB.Get(&m, `SELECT id FROM machine WHERE code = ?`, mc.MachineCode)
+//		MachineID := m.ID
+//		myDB.Get(&i, `SELECT id FROM item WHERE sku = ?`, mc.ItemCode)
+//		ItemID := i.ID
+//		ColumnNo, err := strconv.ParseInt(mc.Code, 10, 64)
+//		if err != nil {
+//			log.Error(err.Error())
+//		}
+//		_, err = stmt.Exec(
+//			MachineID,
+//			ColumnNo,
+//			ItemID,
+//		)
+//		if err != nil {
+//			log.Error(err.Error())
+//		}
+//		count++
+//		log.Info("Import MachineColumn row number = ", count)
+//	}
+//}
 
+type MachinePlace struct {
+	Code string
+	NameTH null.String
+	NameEN null.String
+}
+
+//func TestImportTable_Client(t *testing.T) {
+//	sql := `SELECT
+//	 	code,
+//	 	nameth,
+//	 	nameen
+//	 FROM tb_sv_machineplace ORDER BY code ASC`
+//	var ps []MachinePlace
+//	err := msDB.Select(&ps, sql)
+//	if err != nil {
+//		t.Error("Error on Select():", err)
+//	}
+//	log.Info("no err on msDB.Select()")
+//	var count int
+//	sql = `INSERT INTO client(
+//			code,
+//			nameTH,
+//			nameEN
+//		) VALUES(?,?,?)`
+//	stmt, err := myDB.Preparex(sql)
+//	if err != nil {
+//		t.Error("Error on DBPreparex()=", err)
+//	}
+//	for _, p := range ps {
+//		_, err = stmt.Exec(
+//			p.Code,
+//			p.NameTH.String,
+//			p.NameEN.String,
+//		)
+//		if err != nil {
+//			log.Error(err.Error())
+//		}
+//		count++
+//		log.Info("Import MachinePlace -> Client, row number = ", count)
+//	}
+//}
+//
