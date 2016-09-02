@@ -4,32 +4,22 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"encoding/json"
-	"os"
 	c "github.com/mrtomyum/gin/controller"
 	"github.com/gin-gonic/gin"
+	_ "github.com/denisenkom/go-mssqldb"
 )
 
-type Config struct {
-	DBHost string `json:"db_host"`
-	DBName string `json:"db_name"`
-	DBUser string `json:"db_user"`
-	DBPass string `json:"db_pass"`
-}
 
-func loadConfig() *Config {
-	file, _ := os.Open("config.json")
-	decoder := json.NewDecoder(file)
-	config := new(Config)
-	err := decoder.Decode(&config)
-	if err != nil {
-		log.Println("error:", err)
-	}
-	return config
-}
 
-func NewDB(dsn string) (*sqlx.DB, error){
-	db := sqlx.MustConnect("mysql", dsn)
+const (
+	DB_HOST = "tcp(nava.work:3306)"
+	DB_NAME = "stock"
+	DB_USER = "root"
+	DB_PASS = "mypass"
+)
+
+func NewDB(driver, dsn string) (*sqlx.DB, error){
+	db := sqlx.MustConnect(driver, dsn)
 	return db, nil
 }
 func SetupRouter(e *c.API) *gin.Engine{
@@ -42,14 +32,14 @@ func SetupRouter(e *c.API) *gin.Engine{
 }
 
 func main() {
-	config := loadConfig()
-	var dsn = config.DBUser + ":" + config.DBPass + "@" + config.DBHost + "/" + config.DBName + "?parseTime=true"
-	db, err := NewDB(dsn)
+	var myDSN = DB_USER + ":" + DB_PASS + "@" + DB_HOST + "/" + DB_NAME + "?parseTime=true"
+	myDB, err := NewDB("mysql", myDSN)
 	if err != nil {
 		log.Panic("NewDB() Error:", err)
 	}
-	defer db.Close()
-	e := &c.API{DB: db}
+	defer myDB.Close()
+
+	e := &c.API{DB: myDB}
 	app := SetupRouter(e)
 	app.Run(":8080")
 }
